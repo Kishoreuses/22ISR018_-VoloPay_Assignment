@@ -1,16 +1,42 @@
 // Central API client — reads base URL from environment variable
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+let rawBaseUrl = import.meta.env.VITE_API_URL || '';
+
+// Clean up trailing slash
+if (rawBaseUrl.endsWith('/')) {
+  rawBaseUrl = rawBaseUrl.slice(0, -1);
+}
+
+// Fallback to relative /api if empty, or localhost in development
+const BASE_URL = rawBaseUrl || (import.meta.env.PROD ? '/api' : 'http://localhost:5000/api');
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    ...options
-  });
-  const json = await res.json();
-  if (!res.ok || !json.success) {
-    throw new Error(json.error || 'API request failed');
+  const url = `${BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+  
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { 'Content-Type': 'application/json', ...options?.headers },
+      ...options
+    });
+  } catch (netErr: any) {
+    console.error(`Network fetch failed for ${url}:`, netErr);
+    throw new Error(`Network error connecting to backend (${url}). Check VITE_API_URL configuration.`);
   }
-  return json.data ?? json;
+
+  const text = await res.text();
+  let json: any;
+  try {
+    json = JSON.parse(text);
+  } catch (parseErr) {
+    console.error(`Non-JSON response received from ${url}:`, text.slice(0, 200));
+    throw new Error(`Invalid response received from server (${res.status} ${res.statusText}).`);
+  }
+
+  if (!res.ok || json.success === false) {
+    throw new Error(json.error || `Request failed with status ${res.status}`);
+  }
+
+  return json.data !== undefined ? json.data : json;
 }
 
 export const api = {

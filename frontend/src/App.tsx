@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ErrorBoundary from './components/ErrorBoundary';
 import Dashboard from './pages/Dashboard';
 import Members from './pages/Members';
 import Outreach from './pages/Outreach';
@@ -11,18 +12,20 @@ import Help from './pages/Help';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/members" element={<Members />} />
-        <Route path="/outreach" element={<Outreach />} />
-        <Route path="/members/:id" element={<MemberDetail />} />
-        <Route path="/activities" element={<Activities />} />
-        <Route path="/follow-ups" element={<FollowUps />} />
-        <Route path="/focused" element={<Focused />} />
-        <Route path="/ai-assistant" element={<AIAssistant />} />
-        <Route path="/help" element={<Help />} />
-      </Routes>
-    </BrowserRouter>
+    <ErrorBoundary>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/members" element={<Members />} />
+          <Route path="/outreach" element={<Outreach />} />
+          <Route path="/members/:id" element={<MemberDetail />} />
+          <Route path="/activities" element={<Activities />} />
+          <Route path="/follow-ups" element={<FollowUps />} />
+          <Route path="/focused" element={<Focused />} />
+          <Route path="/ai-assistant" element={<AIAssistant />} />
+          <Route path="/help" element={<Help />} />
+        </Routes>
+      </BrowserRouter>
+    </ErrorBoundary>
   );
 }
