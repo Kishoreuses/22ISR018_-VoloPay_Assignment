@@ -1,9 +1,14 @@
 // Central API client — reads base URL from environment variable
-let rawBaseUrl = import.meta.env.VITE_API_URL || '';
+let rawBaseUrl = (import.meta.env.VITE_API_URL || '').trim();
 
 // Clean up trailing slash
 if (rawBaseUrl.endsWith('/')) {
   rawBaseUrl = rawBaseUrl.slice(0, -1);
+}
+
+// Automatically ensure /api is appended if the root domain was provided
+if (rawBaseUrl && !rawBaseUrl.endsWith('/api')) {
+  rawBaseUrl = `${rawBaseUrl}/api`;
 }
 
 // Fallback to relative /api if empty, or localhost in development
